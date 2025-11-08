@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIDgateway — Institutional Trust Network</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --midnight-indigo: #141B2D;
+            --graphite-mist: #6B7280;
+            --off-white: #F9FAFB;
+            --muted-grey: #C7CED9;
+            --electric-cerulean: #2D9CDB;
+            --emerald-zk-green: #00C897;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--midnight-indigo) 0%, var(--graphite-mist) 100%);
+            color: var(--muted-grey);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Network */
+        .network-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        .network-node {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--electric-cerulean);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--electric-cerulean);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px var(--electric-cerulean); }
+            50% { box-shadow: 0 0 40px var(--electric-cerulean), 0 0 60px var(--electric-cerulean); }
+        }
+
+        .network-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--electric-cerulean), transparent);
+            opacity: 0.3;
+            animation: flow 4s linear infinite;
+        }
+
+        @keyframes flow {
+            0% { opacity: 0.1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 0.1; }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            padding: 2rem 0;
+            border-bottom: 1px solid rgba(45, 156, 219, 0.2);
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--off-white);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-accent {
+            color: var(--electric-cerulean);
+            text-shadow: 0 0 20px rgba(45, 156, 219, 0.5);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 0 6rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--off-white);
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            letter-spacing: -1px;
+        }
+
+        .hero-highlight {
+            background: linear-gradient(135deg, var(--electric-cerulean), var(--emerald-zk-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+
+        .hero-tagline {
+            font-size: 1.5rem;
+            color: var(--muted-grey);
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            color: var(--muted-grey);
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            line-height: 1.8;
+        }
+
+        /* CTA Buttons */
+        .cta-group {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--electric-cerulean), var(--emerald-zk-green));
+            color: white;
+            box-shadow: 0 4px 20px rgba(45, 156, 219, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(45, 156, 219, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--off-white);
+            border: 2px solid var(--electric-cerulean);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(45, 156, 219, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Visual Diagram */
+        .trust-network {
+            margin: 6rem 0;
+            padding: 4rem 0;
+            position: relative;
+        }
+
+        .network-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 4rem 0;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .network-entity {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+        }
+
+        .entity-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(45, 156, 219, 0.1), rgba(0, 200, 151, 0.1));
+            border: 2px solid var(--electric-cerulean);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            position: relative;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .entity-icon::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px dotted var(--electric-cerulean);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .entity-title {
+            font-size: 1.5rem;
+            color: var(--off-white);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .entity-description {
+            font-size: 1rem;
+            color: var(--muted-grey);
+        }
+
+        /* Connection Lines Between Entities */
+        .connection-line {
+            position: absolute;
+            top: 50%;
+            left: 25%;
+            right: 25%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--electric-cerulean), var(--emerald-zk-green), var(--electric-cerulean));
+            opacity: 0.5;
+        }
+
+        /* Problem/Solution Section */
+        .section {
+            padding: 6rem 0;
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            color: var(--off-white);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--muted-grey);
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 4rem;
+        }
+
+        /* Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+
+        .feature-card {
+            background: rgba(20, 27, 45, 0.6);
+            border: 1px solid rgba(45, 156, 219, 0.3);
+            border-radius: 12px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--electric-cerulean);
+            box-shadow: 0 10px 40px rgba(45, 156, 219, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            color: var(--off-white);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .feature-description {
+            color: var(--muted-grey);
+            line-height: 1.8;
+        }
+
+        /* How It Works */
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            max-width: 900px;
+            margin: 4rem auto;
+        }
+
+        .step {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--electric-cerulean), var(--emerald-zk-green));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: 0 0 30px rgba(45, 156, 219, 0.4);
+        }
+
+        .step-content h3 {
+            font-size: 1.5rem;
+            color: var(--off-white);
+            margin-bottom: 0.75rem;
+        }
+
+        .step-content p {
+            color: var(--muted-grey);
+            line-height: 1.8;
+        }
+
+        /* Stats Section */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin: 4rem 0;
+            text-align: center;
+        }
+
+        .stat-item {
+            padding: 2rem;
+        }
+
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--electric-cerulean), var(--emerald-zk-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: var(--muted-grey);
+        }
+
+        /* Stakeholder Benefits */
+        .stakeholder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .stakeholder-card {
+            background: rgba(20, 27, 45, 0.8);
+            border-left: 4px solid var(--electric-cerulean);
+            padding: 2.5rem;
+            border-radius: 8px;
+        }
+
+        .stakeholder-card:nth-child(2) {
+            border-left-color: var(--emerald-zk-green);
+        }
+
+        .stakeholder-card:nth-child(3) {
+            border-left-color: var(--electric-cerulean);
+        }
+
+        .stakeholder-title {
+            font-size: 1.75rem;
+            color: var(--off-white);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .benefit-list {
+            list-style: none;
+        }
+
+        .benefit-list li {
+            padding: 0.75rem 0 0.75rem 2rem;
+            position: relative;
+            color: var(--muted-grey);
+        }
+
+        .benefit-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--emerald-zk-green);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 4rem 0 2rem;
+            border-top: 1px solid rgba(45, 156, 219, 0.2);
+            margin-top: 6rem;
+            text-align: center;
+        }
+
+        .footer-tagline {
+            font-size: 1.5rem;
+            color: var(--off-white);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .footer-description {
+            color: var(--muted-grey);
+            margin-bottom: 2rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: var(--electric-cerulean);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--emerald-zk-green);
+            text-shadow: 0 0 10px rgba(0, 200, 151, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-tagline {
+                font-size: 1.25rem;
+            }
+
+            .hero-description {
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .network-diagram {
+                flex-direction: column;
+            }
+
+            .connection-line {
+                display: none;
+            }
+
+            .cta-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Accent Glow Effect */
+        .accent-glow {
+            position: relative;
+        }
+
+        .accent-glow::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(circle, rgba(45, 156, 219, 0.3), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .accent-glow:hover::after {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Network Background -->
+    <div class="network-background" id="networkBg"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <span class="logo-accent">DID</span>gateway
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>
+                <span class="hero-highlight">Institutional Trust Network</span><br>
+                for Digital Finance
+            </h1>
+            <p class="hero-tagline">Verified Once, Use Everywhere.</p>
+            <p class="hero-description">
+                DIDgateway creates a universal trust layer for institutional-grade decentralized finance.
+                Leverage your existing bank relationships for secure, private, and compliant onboarding
+                to DeFi protocols without repeating KYC.
+            </p>
+            <div class="cta-group">
+                <button class="btn btn-primary accent-glow">Get Started</button>
+                <button class="btn btn-secondary accent-glow">View Documentation</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Network Visualization -->
+    <section class="trust-network">
+        <div class="container">
+            <div class="network-diagram">
+                <div class="network-entity">
+                    <div class="entity-icon">🏦</div>
+                    <h3 class="entity-title">Banks</h3>
+                    <p class="entity-description">Issue Verifiable Credentials after KYC</p>
+                </div>
+
+                <div class="network-entity">
+                    <div class="entity-icon">🔐</div>
+                    <h3 class="entity-title">DIDgateway</h3>
+                    <p class="entity-description">Decentralized verification network</p>
+                </div>
+
+                <div class="network-entity">
+                    <div class="entity-icon">⚡</div>
+                    <h3 class="entity-title">DeFi</h3>
+                    <p class="entity-description">Instant compliance verification</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">The Problem</h2>
+            <p class="section-subtitle">
+                Every financial institution repeats the same KYC process. Every DeFi protocol struggles with compliance.
+                Users lose control of their identity data.
+            </p>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">$500B+</div>
+                    <div class="stat-label">Annual KYC Compliance Cost</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">90%</div>
+                    <div class="stat-label">Duplicate KYC Processes</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">7-30</div>
+                    <div class="stat-label">Days Average Onboarding Time</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Our Solution</h2>
+            <p class="section-subtitle">
+                A decentralized trust network that enables one-time verification with universal reusability,
+                powered by zero-knowledge proofs.
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-card accent-glow">
+                    <span class="feature-icon">🔒</span>
+                    <h3 class="feature-title">Privacy-Preserving</h3>
+                    <p class="feature-description">
+                        Zero-knowledge proofs ensure verification without exposing sensitive identity data.
+                        Your credentials remain private while proving compliance.
+                    </p>
+                </div>
+
+                <div class="feature-card accent-glow">
+                    <span class="feature-icon">🌐</span>
+                    <h3 class="feature-title">Decentralized Network</h3>
+                    <p class="feature-description">
+                        No single point of failure. Our network of operators ensures continuous availability
+                        and trustless verification across the ecosystem.
+                    </p>
+                </div>
+
+                <div class="feature-card accent-glow">
+                    <span class="feature-icon">⚡</span>
+                    <h3 class="feature-title">Instant Verification</h3>
+                    <p class="feature-description">
+                        From weeks to seconds. DeFi protocols verify compliance instantly without
+                        traditional KYC delays or manual processes.
+                    </p>
+                </div>
+
+                <div class="feature-card accent-glow">
+                    <span class="feature-icon">🏛️</span>
+                    <h3 class="feature-title">Institutional Grade</h3>
+                    <p class="feature-description">
+                        Built on open-source standards with enterprise security. Designed for banks,
+                        exchanges, and regulated financial institutions.
+                    </p>
+                </div>
+
+                <div class="feature-card accent-glow">
+                    <span class="feature-icon">💰</span>
+                    <h3 class="feature-title">Revenue Model</h3>
+                    <p class="feature-description">
+                        Banks monetize existing KYC data. DeFi protocols pay micro-fees.
+                        Users finally control their digital identity.
+                    </p>
+                </div>
+
+                <div class="feature-card accent-glow">
+                    <span class="feature-icon">🔗</span>
+                    <h3 class="feature-title">Interoperable</h3>
+                    <p class="feature-description">
+                        One credential works everywhere. Seamlessly integrate with any DeFi protocol,
+                        exchange, or financial service in the ecosystem.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">
+                A simple, secure process that transforms how trust flows through digital finance.
+            </p>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Bank Issues Credential</h3>
+                        <p>
+                            After completing standard KYC, your bank issues a Verifiable Credential
+                            using DIDgateway's open-source standard. This credential is cryptographically
+                            signed and belongs to you.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>User Controls Identity</h3>
+                        <p>
+                            You hold your credential in a secure wallet. No centralized database stores
+                            your identity. You decide when and where to prove your compliance status.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Zero-Knowledge Verification</h3>
+                        <p>
+                            When accessing a DeFi protocol, you generate a zero-knowledge proof.
+                            This proves you're verified without revealing any personal data to the protocol.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Instant Access</h3>
+                        <p>
+                            DIDgateway's decentralized operator network validates your proof in real-time.
+                            The DeFi protocol grants access instantly — no waiting, no repeated KYC.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stakeholder Benefits -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Value for Every Stakeholder</h2>
+
+            <div class="stakeholder-grid">
+                <div class="stakeholder-card">
+                    <h3 class="stakeholder-title">🏦 For Banks</h3>
+                    <ul class="benefit-list">
+                        <li>Monetize existing KYC data</li>
+                        <li>Reduce redundant verification costs</li>
+                        <li>Enhance customer value proposition</li>
+                        <li>Maintain regulatory compliance</li>
+                        <li>Strengthen customer relationships</li>
+                    </ul>
+                </div>
+
+                <div class="stakeholder-card">
+                    <h3 class="stakeholder-title">⚡ For DeFi Protocols</h3>
+                    <ul class="benefit-list">
+                        <li>Instant compliance verification</li>
+                        <li>Reduce onboarding friction</li>
+                        <li>Access institutional capital</li>
+                        <li>Lower regulatory risk</li>
+                        <li>Pay-per-verification model</li>
+                    </ul>
+                </div>
+
+                <div class="stakeholder-card">
+                    <h3 class="stakeholder-title">👤 For Users</h3>
+                    <ul class="benefit-list">
+                        <li>Complete identity ownership</li>
+                        <li>Privacy-preserving verification</li>
+                        <li>One-time KYC, unlimited use</li>
+                        <li>Instant protocol access</li>
+                        <li>Portable digital credentials</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer CTA -->
+    <footer>
+        <div class="container">
+            <h2 class="footer-tagline">Ready to Build the Future of Trust?</h2>
+            <p class="footer-description">
+                Join the decentralized trust revolution. DIDgateway — Verified Once, Use Everywhere.
+            </p>
+            <div class="cta-group">
+                <button class="btn btn-primary accent-glow">Contact Sales</button>
+                <button class="btn btn-secondary accent-glow">Developer Docs</button>
+            </div>
+
+            <div class="footer-links">
+                <a href="#" class="footer-link">GitHub</a>
+                <a href="#" class="footer-link">Documentation</a>
+                <a href="#" class="footer-link">Whitepaper</a>
+                <a href="#" class="footer-link">API Reference</a>
+                <a href="#" class="footer-link">Contact</a>
+            </div>
+
+            <p style="margin-top: 2rem; color: var(--graphite-mist); font-size: 0.9rem;">
+                © 2025 DIDgateway. Building the institutional trust layer for digital finance.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Generate animated network background
+        function createNetworkBackground() {
+            const container = document.getElementById('networkBg');
+            const nodeCount = 30;
+            const nodes = [];
+
+            // Create nodes
+            for (let i = 0; i < nodeCount; i++) {
+                const node = document.createElement('div');
+                node.className = 'network-node';
+                node.style.left = Math.random() * 100 + '%';
+                node.style.top = Math.random() * 100 + '%';
+                node.style.animationDelay = Math.random() * 3 + 's';
+                container.appendChild(node);
+
+                nodes.push({
+                    element: node,
+                    x: parseFloat(node.style.left),
+                    y: parseFloat(node.style.top)
+                });
+            }
+
+            // Create connection lines between nearby nodes
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[j].x - nodes[i].x;
+                    const dy = nodes[j].y - nodes[i].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 25) { // Only connect nearby nodes
+                        const line = document.createElement('div');
+                        line.className = 'network-line';
+
+                        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                        const length = distance;
+
+                        line.style.width = length + '%';
+                        line.style.left = nodes[i].x + '%';
+                        line.style.top = nodes[i].y + '%';
+                        line.style.transform = `rotate(${angle}deg)`;
+                        line.style.transformOrigin = '0 0';
+                        line.style.animationDelay = Math.random() * 4 + 's';
+
+                        container.appendChild(line);
+                    }
+                }
+            }
+        }
+
+        // Smooth scroll for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Initialize network background
+        createNetworkBackground();
+
+        // Parallax effect for network background
+        let ticking = false;
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                window.requestAnimationFrame(function() {
+                    const scrolled = window.pageYOffset;
+                    const networkBg = document.getElementById('networkBg');
+                    networkBg.style.transform = `translateY(${scrolled * 0.3}px)`;
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+    </script>
+</body>
+</html>
